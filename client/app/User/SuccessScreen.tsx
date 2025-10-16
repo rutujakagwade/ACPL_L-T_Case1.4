@@ -7,6 +7,7 @@ type RootStackParamList = {
   SuccessScreen: undefined;
   Expenses: undefined;
   Dashboard: undefined;
+  ExpenseForm: undefined; // 👈 added this route
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, "SuccessScreen">;
@@ -23,8 +24,9 @@ export default function SuccessScreen({ navigation }: Props) {
       </Text>
       <Text style={{ marginBottom: 30 }}>Journey Successfully Completed</Text>
 
+      {/* ✅ Fixed: Navigate to ExpenseForm using React Navigation */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("Expenses")}
+        onPress={() => navigation.navigate("ExpenseForm")}
         style={{ backgroundColor: "black", padding: 14, borderRadius: 6, marginBottom: 10 }}
       >
         <Text style={{ color: "#fff", textAlign: "center" }}>Add Expenses</Text>

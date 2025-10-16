@@ -6,8 +6,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // - Use backend service name when running inside Docker
 
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://168.231.123.241:5000/api";
-// const API_BASE = "http://192.168.1.10:5000/api";
+// const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://168.231.123.241:5000/api";
+const API_BASE = "http://192.168.1.10:5000/api";
 
 
 

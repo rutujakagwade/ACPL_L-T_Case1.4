@@ -1,29 +1,43 @@
-
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { addExpense } from "../../lib/api";
+import { addExpense, getJourneys } from "../../lib/api";
 
 const ExpenseForm = () => {
-  const [selectedJourney, setSelectedJourney] = useState("");
+  const [selectedJourney, setSelectedJourney] = useState<any>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const [journeys, setJourneys] = useState<any[]>([]);
+  const [loadingJourneys, setLoadingJourneys] = useState(true);
 
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [receiptFile, setReceiptFile] = useState<{ uri: string; name: string; type: string } | null>(null);
 
-  const journeys = [
-    "Business Trip - Office to Client Site",
-    "Client Visit - Project Discussion",
-    "Training - React Native Workshop",
-    "Personal - Travel",
-  ];
-
   const expenseTypes = ["fuel", "accommodation", "food", "parking", "miscellaneous"];
   const router = useRouter();
+
+  // 🟢 Fetch actual journeys from backend
+  useEffect(() => {
+    const fetchJourneys = async () => {
+      try {
+        setLoadingJourneys(true);
+        const token = await AsyncStorage.getItem("token");
+        if (!token) throw new Error("Unauthorized");
+        const data = await getJourneys(); // fetch journeys from your API
+        setJourneys(data);
+      } catch (error) {
+        console.error("Failed to fetch journeys:", error);
+        Alert.alert("Error", "Failed to fetch journeys");
+      } finally {
+        setLoadingJourneys(false);
+      }
+    };
+    fetchJourneys();
+  }, []);
 
   const pickFile = async () => {
     try {
@@ -57,8 +71,8 @@ const ExpenseForm = () => {
       if (!token) return Alert.alert("Unauthorized");
 
       const formData = new FormData();
-      selectedTypes.forEach(t => formData.append("type[]", t)); // Multi type
-      formData.append("journey", selectedJourney); // Journey
+      selectedTypes.forEach(t => formData.append("type[]", t));
+      formData.append("journey", selectedJourney._id); // send journey ID
       formData.append("amount", amount);
       formData.append("description", description || "");
       formData.append("receipt", {
@@ -85,24 +99,33 @@ const ExpenseForm = () => {
           onPress={() => setDropdownOpen(!dropdownOpen)}
           className="border p-2 rounded mb-4 flex-row justify-between items-center"
         >
-          <Text>{selectedJourney || "Select Journey"}</Text>
+          <Text>{selectedJourney ? selectedJourney.purpose : "Select Journey"}</Text>
           <Text style={{ fontSize: 18 }}>{dropdownOpen ? "▲" : "▼"}</Text>
         </TouchableOpacity>
 
         {dropdownOpen && (
           <View className="border rounded mb-4 bg-white">
-            {journeys.map((journey, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  setSelectedJourney(journey);
-                  setDropdownOpen(false);
-                }}
-                className="p-2 border-b border-gray-200"
-              >
-                <Text>{journey}</Text>
-              </TouchableOpacity>
-            ))}
+            {loadingJourneys ? (
+              <View className="p-4 items-center">
+                <ActivityIndicator size="small" color="black" />
+                <Text className="mt-2">Loading journeys...</Text>
+              </View>
+            ) : journeys.length === 0 ? (
+              <Text className="p-4 text-center text-gray-500">No journeys found</Text>
+            ) : (
+              journeys.map((journey) => (
+                <TouchableOpacity
+                  key={journey._id}
+                  onPress={() => {
+                    setSelectedJourney(journey);
+                    setDropdownOpen(false);
+                  }}
+                  className="p-2 border-b border-gray-200"
+                >
+                  <Text>{journey.purpose}</Text>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         )}
 

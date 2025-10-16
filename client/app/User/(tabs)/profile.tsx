@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { updateAdminProfile, getAdminProfile } from "../../../lib/api";
+import { updateUserProfile, getUserProfile } from "../../../lib/api";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -36,8 +36,8 @@ const Profile = () => {
         const token = await AsyncStorage.getItem("token");
         if (!token) return;
 
-        const data = await getAdminProfile(token);
-        const profile = (data as any)?.admin || data || {};
+        const data = await getUserProfile(token);
+        const profile = data || {};
 
         const style = profile.style || "identicon";
         const seedVal = profile.seed || "admin123";
@@ -72,11 +72,11 @@ const Profile = () => {
         return;
       }
 
-      await updateAdminProfile({ name, avatar, seed, style: selectedStyle }, token);
+      await updateUserProfile({ name, avatar, seed, style: selectedStyle }, token);
 
       // re-fetch (to stay in sync with backend)
-      const updatedData = await getAdminProfile(token);
-      const profile = (updatedData as any)?.admin || updatedData || {};
+      const updatedData = await getUserProfile(token);
+      const profile = updatedData || {};
 
       const style = profile.style || selectedStyle;
       const seedVal = profile.seed || seed;

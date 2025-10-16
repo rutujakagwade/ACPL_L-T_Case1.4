@@ -1,49 +1,41 @@
-// JourneyHistory.tsx
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
+// screens/journeys/JourneyHistory.tsx
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from "react-native";
 import { Ionicons, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { getJourneys } from "../../../lib/api"; // 👈 make sure this path is correct
 
 const JourneyHistory = () => {
+  const [journeys, setJourneys] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedJourney, setSelectedJourney] = useState<any>(null);
 
-  const journeys = [
-    {
-      id: 1,
-      purpose: "Client Meeting",
-      date: "4th September 2025",
-      distance: "20 km",
-      start: "Office",
-      end: "Client Site",
-    },
-    {
-      id: 2,
-      purpose: "Product Delivery",
-      date: "5th September 2025",
-      distance: "15 km",
-      start: "Warehouse",
-      end: "Retail Store",
-    },
-    {
-      id: 3,
-      purpose: "Site Visit",
-      date: "6th September 2025",
-      distance: "30 km",
-      start: "Office",
-      end: "Construction Site",
-    },
-    {
-      id: 4,
-      purpose: "Training Session",
-      date: "7th September 2025",
-      distance: "10 km",
-      start: "Home",
-      end: "Training Center",
-    },
-  ];
-
   const router = useRouter();
+
+  // 🧠 Fetch journeys from backend
+  useEffect(() => {
+    const fetchJourneys = async () => {
+      try {
+        setLoading(true);
+        const response = await getJourneys();
+        // Ensure response is an array
+        if (Array.isArray(response)) {
+          setJourneys(response);
+        } else if (response?.data) {
+          setJourneys(response.data);
+        } else {
+          console.warn("Unexpected response format:", response);
+        }
+      } catch (error) {
+        console.error("Failed to fetch journeys:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJourneys();
+  }, []);
 
   const openModal = (journey: any) => {
     setSelectedJourney(journey);
@@ -60,44 +52,69 @@ const JourneyHistory = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Journey Cards */}
-      <ScrollView className="p-4">
-        {journeys.map((journey) => (
-          <View
-            key={journey.id}
-            className="bg-white p-4 mb-4 rounded-2xl shadow-md"
-          >
-            {/* Card Header */}
-            <View className="flex-row justify-between items-center">
-              <Text className="font-bold text-base">{journey.purpose}</Text>
-              <TouchableOpacity
-                className="bg-black px-3 py-1 rounded-lg"
-                onPress={() => openModal(journey)}
+      {/* Loading State */}
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="black" />
+          <Text className="mt-3 text-gray-600">Loading journeys...</Text>
+        </View>
+      ) : (
+        <ScrollView className="p-4">
+          {journeys.length === 0 ? (
+            <Text className="text-center text-gray-500 mt-10">No journeys found.</Text>
+          ) : (
+            journeys.map((journey) => (
+              <View
+                key={journey._id}
+                className="bg-white p-4 mb-4 rounded-2xl shadow-md"
               >
-                <Text className="text-white text-xs font-medium">View Details</Text>
-              </TouchableOpacity>
-            </View>
+                {/* Card Header */}
+                <View className="flex-row justify-between items-center">
+                  <Text className="font-bold text-base">
+                    {journey.purpose || "No Purpose"}
+                  </Text>
+                  <TouchableOpacity
+                    className="bg-black px-3 py-1 rounded-lg"
+                    onPress={() => openModal(journey)}
+                  >
+                    <Text className="text-white text-xs font-medium">View Details</Text>
+                  </TouchableOpacity>
+                </View>
 
-            {/* Date & Distance */}
-            <View className="mt-2 flex-row justify-between">
-              <Text className="text-sm text-gray-600">{journey.date}</Text>
-              <Text className="text-sm text-gray-600">{journey.distance}</Text>
-            </View>
+                {/* Date & Distance */}
+                <View className="mt-2 flex-row justify-between">
+                  <Text className="text-sm text-gray-600">
+                    {new Date(journey.startTime).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {(journey.distance / 1000).toFixed(2)} km
+                  </Text>
+                </View>
 
-            {/* Locations */}
-            <View className="mt-3 space-y-2">
-              <View className="flex-row items-center">
-                <Ionicons name="location-outline" size={16} color="#3b82f6" />
-                <Text className="ml-2 text-sm font-medium">{journey.start}</Text>
+                {/* Locations */}
+                <View className="mt-3 space-y-2">
+                  <View className="flex-row items-center">
+                    <Ionicons name="location-outline" size={16} color="#3b82f6" />
+                    <Text className="ml-2 text-sm font-medium">
+                      {journey.startLocation?.name || "Start point"}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Ionicons name="location-outline" size={16} color="#ef4444" />
+                    <Text className="ml-2 text-sm font-medium">
+                      {journey.endLocation?.name || "End point"}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View className="flex-row items-center">
-                <Ionicons name="location-outline" size={16} color="#ef4444" />
-                <Text className="ml-2 text-sm font-medium">{journey.end}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+            ))
+          )}
+        </ScrollView>
+      )}
 
       {/* Modal */}
       {selectedJourney && (
@@ -121,32 +138,39 @@ const JourneyHistory = () => {
                 {selectedJourney.purpose}
               </Text>
               <Text className="text-gray-500 text-sm mb-3">
-                {selectedJourney.date}
+                {new Date(selectedJourney.startTime).toLocaleString()}
               </Text>
 
               <Text className="font-semibold text-black mb-3">
-                {selectedJourney.distance}
+                {(selectedJourney.distance / 1000).toFixed(2)} km
               </Text>
 
               {/* Start / End Location */}
               <View className="mb-2">
                 <View className="flex-row items-center mb-1">
                   <Ionicons name="navigate-circle-outline" size={18} color="black" />
-                  <Text className="ml-2 text-black">Start: {selectedJourney.start}</Text>
+                  <Text className="ml-2 text-black">
+                    Start: {selectedJourney.startLocation?.name || "N/A"}
+                  </Text>
                 </View>
                 <View className="flex-row items-center">
                   <Ionicons name="location-outline" size={18} color="black" />
-                  <Text className="ml-2 text-black">End: {selectedJourney.end}</Text>
+                  <Text className="ml-2 text-black">
+                    End: {selectedJourney.endLocation?.name || "N/A"}
+                  </Text>
                 </View>
               </View>
 
               {/* Edit Expenses Button */}
-              <TouchableOpacity className="border border-gray-400 rounded-full px-3 py-1 mb-3 self-start flex-row items-center">
+              <TouchableOpacity
+                className="border border-gray-400 rounded-full px-3 py-1 mb-3 self-start flex-row items-center"
+                onPress={() => router.push(`/User/ExpenseForm?id=${selectedJourney._id}`)}
+              >
                 <MaterialIcons name="edit" size={16} color="black" />
                 <Text className="ml-1 text-black text-sm">Edit Expenses</Text>
               </TouchableOpacity>
 
-              {/* Expense Info */}
+              {/* Expense Info Placeholder */}
               <View className="mb-3">
                 <Text className="text-black">
                   Total Expense: <Text className="font-bold">Rs. 20</Text>
