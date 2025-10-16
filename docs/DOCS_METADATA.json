@@ -1,0 +1,54 @@
+{
+  "generated_at": "2025-10-07T12:00:00Z",
+  "documentation_version": "1.0.0",
+  "codebase_analyzed": {
+    "repo_path": "c:\\AjinkyaCreation\\ACPL_L-T_Case-main",
+    "files_analyzed": 47,
+    "lines_of_code": 12500
+  },
+  "documents": [
+    {
+      "filename": "COMPLETE_DOCUMENTATION.md",
+      "title": "Complete Documentation",
+      "word_count": 450,
+      "last_updated": "2025-10-07T12:00:00Z"
+    },
+    {
+      "filename": "docs/01_quick_start.md",
+      "title": "Quick Start Guide",
+      "word_count": 750,
+      "last_updated": "2025-10-07T12:00:00Z"
+    },
+    {
+      "filename": "docs/02_architecture.md",
+      "title": "System Architecture",
+      "word_count": 1200,
+      "last_updated": "2025-10-07T12:00:00Z"
+    }
+  ],
+  "technologies_detected": {
+    "frontend": [
+      "Expo (53.0.23)",
+      "React Native",
+      "TypeScript",
+      "Expo Router",
+      "AsyncStorage"
+    ],
+    "backend": [
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "Mongoose",
+      "JWT",
+      "Cloudinary",
+      "Nodemailer"
+    ],
+    "database": [
+      "MongoDB 8.x"
+    ],
+    "deployment": [
+      "Docker",
+      "docker-compose"
+    ]
+  }
+}

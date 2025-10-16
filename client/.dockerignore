@@ -1,0 +1,37 @@
+# Node modules
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Expo / React Native build artifacts
+.expo
+.expo-shared
+android
+ios
+web-build
+dist
+build
+
+# Logs
+*.log
+logs
+
+# Environment & configs
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Metro bundler cache
+*.packager
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore

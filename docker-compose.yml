@@ -1,0 +1,79 @@
+# version: "3.8"
+
+# services:
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile.dev      # use Dockerfile for production
+#     env_file:
+#       - ./backend/.env
+#     ports:
+#       - "5000:5000"
+#     volumes:
+#       - ./backend:/usr/src/app        # sync code for hot-reload
+#       - /usr/src/app/node_modules     # keep container deps separate
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+#     restart: unless-stopped
+
+#   expo:
+#     build:
+#       context: ./client
+#       dockerfile: Dockerfile
+#     ports:
+#       - "19000:19000"  # Metro
+#       - "19001:19001"  # Websocket
+#       - "19002:19002"  # DevTools UI
+#       - "8081:8081"    # JS debugger
+#     volumes:
+#       - ./client:/app            # hot-reload your code
+#       - /app/node_modules        # container keeps its own node_modules
+#     environment:
+#       - REACT_NATIVE_PACKAGER_HOSTNAME=host.docker.internal
+#       - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+
+
+
+
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: backend/Dockerfile.dev
+    env_file:
+      - ./backend/backend/.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    networks:
+      - mapworkin-net
+
+  expo:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+      - "8081:8081"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - REACT_NATIVE_PACKAGER_HOSTNAME=host.docker.internal
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - EXPO_PUBLIC_API_URL=https://168.231.123.241:5000/api
+    tty: true
+    networks:
+      - mapworkin-net
+
+networks:
+  mapworkin-net:
+    driver: bridge
